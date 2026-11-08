@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyStack: Flow & Focus</title>
+    <style>
+        /* ==========================================
+           1. CSS STYLING (Neo-Brutalist Aesthetic)
+           ========================================== */
+        :root {
+            --bg-main: #f4f1ea;        /* Beige */
+            --card-bg: #FFFFFF;
+            --text-main: #1a1a1a;      /* Charcoal */
+            --border: #1a1a1a;         /* Dark Charcoal Border */
+            
+            /* Earthy Badges */
+            --status-ongoing: #049717; /* Mustard */
+            --status-tbc: #738054;     /* Olive */
+            --status-hold: #c26d5c;    /* Terracotta */
+            --status-done: #a9a9a9;    /* Gray */
+            --status-terracotta: #c26d5c; /* Action/Delete */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; }
+
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-main); 
+            padding: 2rem 1rem; 
+            min-height: 100vh;
+        }
+
+        .container { max-width: 950px; margin: 0 auto; }
+
+        /* Header */
+        header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .app-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            background: #FFFFFF;
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border: 3px solid var(--border);
+            box-shadow: 5px 5px 0px var(--border);
+        }
+
+        /* Progress Bar Section */
+        .progress-card {
+            background: var(--card-bg);
+            border: 3px solid var(--border);
+            box-shadow: 4px 4px 0px var(--border);
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .progress-bar-bg {
+            background: var(--bg-main);
+            border: 2px solid var(--border);
+            height: 22px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: var(--status-ongoing);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Dashboard Summary Grid */
+        .dashboard { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 1rem; 
+            margin-bottom: 2rem; 
+        }
+
+        .stat-card { 
+            background: var(--card-bg);
+            border: 3px solid var(--border);
+            box-shadow: 4px 4px 0px var(--border);
+            padding: 1rem; 
+            text-align: center; 
+        }
+
+        .stat-card h3 { 
+            font-size: 0.85rem; 
+            font-weight: bold; 
+            margin-bottom: 0.4rem; 
+            text-transform: uppercase;
+        }
+
+        .stat-card .count { font-size: 2.2rem; font-weight: 900; }
+        
+        .stat-ongoing h3 { color: var(--status-ongoing); }
+        .stat-tbc h3 { color: var(--status-tbc); }
+        .stat-hold h3 { color: var(--status-hold); }
+        .stat-done h3 { color: var(--status-done); }
+
+        /* Main Content Grid */
+        .main-content { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; align-items: start; }
+        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
+
+        .card { 
+            background: var(--card-bg);
+            border: 3px solid var(--border);
+            box-shadow: 4px 4px 0px var(--border);
+            padding: 1.5rem; 
+        }
+
+        .card-title { 
+            font-size: 1.25rem; 
+            margin-bottom: 1.25rem; 
+            text-transform: uppercase; 
+            font-weight: 900; 
+            border-bottom: 3px solid var(--border); 
+            padding-bottom: 0.5rem; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Form Inputs */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.4rem; text-transform: uppercase; }
+        
+        .form-group input, .form-group select { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 2px solid var(--border); 
+            background: #FFFFFF;
+            font-size: 0.95rem; 
+            outline: none; 
+            font-family: inherit;
+        }
+
+        .form-group input:focus, .form-group select:focus { 
+            box-shadow: 3px 3px 0px var(--border); 
+        }
+
+        .btn { 
+            width: 100%; 
+            padding: 0.85rem; 
+            background: var(--text-main); 
+            color: var(--bg-main); 
+            border: 2px solid var(--border); 
+            font-size: 0.95rem; 
+            font-weight: 900; 
+            text-transform: uppercase;
+            cursor: pointer; 
+            transition: 0.1s; 
+            box-shadow: 3px 3px 0px var(--border);
+        }
+
+        .btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px var(--border);
+        }
+
+        .btn:active { 
+            transform: translate(2px, 2px); 
+            box-shadow: 1px 1px 0px var(--border); 
+        }
+
+        /* Filter Controls */
+        .filter-bar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-btn {
+            background: #FFFFFF;
+            border: 2px solid var(--border);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px var(--border);
+            font-family: inherit;
+        }
+
+        .filter-btn.active {
+            background: var(--text-main);
+            color: #FFFFFF;
+        }
+
+        /* Pinned Container */
+        .pinned-section {
+            background: #FFFBF0;
+            border: 3px solid var(--status-tbc);
+            box-shadow: 4px 4px 0px var(--border);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pinned-title {
+            color: var(--text-main);
+            font-size: 0.95rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Task Items */
+        .task-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+
+        .task-item { 
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            box-shadow: 3px 3px 0px var(--border);
+            padding: 1rem; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            gap: 1rem; 
+            border-left-width: 8px; 
+        }
+
+        .task-info { flex-grow: 1; }
+        .task-title { font-size: 1.05rem; font-weight: bold; margin-bottom: 0.3rem; }
+        
+        .task-subject { 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            background: var(--bg-main); 
+            padding: 0.2rem 0.5rem; 
+            border: 1px solid var(--border); 
+            display: inline-block; 
+            text-transform: uppercase;
+        }
+
+        .task-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+        .status-select { 
+            padding: 0.4rem 0.6rem; 
+            border: 2px solid var(--border); 
+            font-size: 0.8rem;
+            font-weight: bold; 
+            cursor: pointer; 
+            outline: none; 
+            font-family: inherit;
+            background: #FFFFFF;
+        }
+
+        .status-select:disabled {
+            background: #e0e0e0;
+            color: #666;
+            cursor: not-allowed;
+            border-color: #a9a9a9;
+            box-shadow: none;
+        }
+
+        .btn-resume {
+            background: var(--status-ongoing);
+            color: #FFFFFF;
+            border: 2px solid var(--border);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px var(--border);
+            font-family: inherit;
+        }
+
+        .btn-resume:active {
+            transform: translate(1px, 1px);
+            box-shadow: 1px 1px 0px var(--border);
+        }
+
+        .btn-delete { 
+            background: var(--status-terracotta); 
+            color: #FFFFFF; 
+            border: 2px solid var(--border); 
+            padding: 0.4rem 0.65rem; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-family: inherit;
+            box-shadow: 2px 2px 0px var(--border);
+        }
+
+        .btn-delete:active { transform: translate(1px, 1px); box-shadow: none; }
+
+        /* Task Left Border Colors */
+        .task-item[data-status="Ongoing"] { border-left-color: var(--status-ongoing); }
+        .task-item[data-status="To Be Continued"] { border-left-color: var(--status-tbc); }
+        .task-item[data-status="On Hold"] { border-left-color: var(--status-hold); }
+        .task-item[data-status="Done"] { border-left-color: var(--status-done); opacity: 0.75; }
+        .task-item[data-status="Done"] .task-title { text-decoration: line-through; }
+
+        .empty-state { 
+            text-align: center; 
+            padding: 2rem; 
+            font-weight: bold; 
+            border: 2px dashed var(--border); 
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1 class="app-title">StudyStack: Flow & Focus</h1>
+        </header>
+
+        <!-- Progress Bar Summary -->
+        <div class="progress-card">
+            <div class="progress-header">
+                <span>PROGRESS OVERVIEW</span>
+                <span id="progress-percent">0% COMPLETED</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard Stat Cards -->
+        <div class="dashboard">
+            <div class="stat-card stat-ongoing">
+                <h3>Ongoing</h3>
+                <div class="count" id="count-ongoing">0</div>
+            </div>
+            <div class="stat-card stat-tbc">
+                <h3>To Be Continued</h3>
+                <div class="count" id="count-tbc">0</div>
+            </div>
+            <div class="stat-card stat-hold">
+                <h3>On Hold</h3>
+                <div class="count" id="count-hold">0</div>
+            </div>
+            <div class="stat-card stat-done">
+                <h3>Done</h3>
+                <div class="count" id="count-done">0</div>
+            </div>
+        </div>
+
+        <!-- Main Grid Layout -->
+        <div class="main-content">
+            <!-- Add Task Form -->
+            <div>
+                <form class="card" id="task-form">
+                    <h2 class="card-title">New Study Task</h2>
+                    
+                    <div class="form-group">
+                        <label for="task-subject">Subject / Topic</label>
+                        <input type="text" id="task-subject" placeholder="e.g. Physics, Web Dev" required autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-name">Task Title</label>
+                        <input type="text" id="task-name" placeholder="e.g. Read Chapter 4" required autocomplete="off">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="task-status">Initial Status</label>
+                        <select id="task-status">
+                            <option value="Ongoing">Ongoing</option>
+                            <option value="To Be Continued">To Be Continued</option>
+                            <option value="On Hold">On Hold</option>
+                            <option value="Done">Done</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn">Add Task</button>
+                </form>
+            </div>
+
+            <!-- Task List Section -->
+            <div>
+                <!-- Pinned TBC Queue -->
+                <div class="pinned-section" id="pinned-container" style="display: none;">
+                    <div class="pinned-title">
+                        📌 Pinned: To Be Continued
+                    </div>
+                    <ul class="task-list" id="pinned-task-list">
+                        <!-- TBC tasks rendered here -->
+                    </ul>
+                </div>
+
+                <!-- Main Workspace Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <span>Task Queue</span>
+                    </div>
+
+                    <!-- Status Filters -->
+                    <div class="filter-bar">
+                        <button class="filter-btn active" onclick="setFilter('All', this)">All</button>
+                        <button class="filter-btn" onclick="setFilter('Ongoing', this)">Ongoing</button>
+                        <button class="filter-btn" onclick="setFilter('To Be Continued', this)">TBC</button>
+                        <button class="filter-btn" onclick="setFilter('On Hold', this)">On Hold</button>
+                        <button class="filter-btn" onclick="setFilter('Done', this)">Done</button>
+                    </div>
+
+                    <!-- Main Task List -->
+                    <ul class="task-list" id="task-list">
+                        <!-- Tasks generated dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================
+           1. STATE & DOM ELEMENTS
+           ========================================== */
+        let tasks = JSON.parse(localStorage.getItem('studystack_tasks')) || [];
+        let activeFilter = 'All';
+
+        const form = document.getElementById('task-form');
+        const subjectInput = document.getElementById('task-subject');
+        const nameInput = document.getElementById('task-name');
+        const statusInput = document.getElementById('task-status');
+
+        const taskList = document.getElementById('task-list');
+        const pinnedContainer = document.getElementById('pinned-container');
+        const pinnedTaskList = document.getElementById('pinned-task-list');
+
+        const countOngoing = document.getElementById('count-ongoing');
+        const countTbc = document.getElementById('count-tbc');
+        const countHold = document.getElementById('count-hold');
+        const countDone = document.getElementById('count-done');
+
+        const progressPercent = document.getElementById('progress-percent');
+        const progressFill = document.getElementById('progress-fill');
+
+        /* ==========================================
+           2. RENDER FUNCTION
+           ========================================== */
+        function renderTasks() {
+            // Save state to local storage
+            localStorage.setItem('studystack_tasks', JSON.stringify(tasks));
+
+            // Clear containers
+            taskList.innerHTML = '';
+            pinnedTaskList.innerHTML = '';
+
+            // Dashboard counters
+            let totals = { "Ongoing": 0, "To Be Continued": 0, "On Hold": 0, "Done": 0 };
+            
+            // Separate Pinned (To Be Continued) and Regular Tasks
+            const tbcTasks = tasks.filter(t => t.status === 'To Be Continued');
+            
+            // Process Counters
+            tasks.forEach(t => {
+                if (totals[t.status] !== undefined) {
+                    totals[t.status]++;
+                }
+            });
+
+            // Update Dashboard UI Counters
+            countOngoing.innerText = totals["Ongoing"];
+            countTbc.innerText = totals["To Be Continued"];
+            countHold.innerText = totals["On Hold"];
+            countDone.innerText = totals["Done"];
+
+            // Update Progress Bar
+            const totalTasks = tasks.length;
+            const completedTasks = totals["Done"];
+            const pct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            progressPercent.innerText = `${pct}% COMPLETED (${completedTasks}/${totalTasks})`;
+            progressFill.style.width = `${pct}%`;
+
+            // Render Pinned Section
+            if (tbcTasks.length > 0) {
+                pinnedContainer.style.display = 'block';
+                tbcTasks.forEach(task => {
+                    const li = createTaskElement(task, true);
+                    pinnedTaskList.appendChild(li);
+                });
+            } else {
+                pinnedContainer.style.display = 'none';
+            }
+
+            // Filter Main Queue Tasks
+            const filteredTasks = tasks.filter(task => {
+                if (activeFilter === 'All') return true;
+                return task.status === activeFilter;
+            });
+
+            // Render Main Queue
+            if (filteredTasks.length === 0) {
+                taskList.innerHTML = '<div class="empty-state">No tasks matching this view.</div>';
+            } else {
+                filteredTasks.forEach(task => {
+                    const li = createTaskElement(task, false);
+                    taskList.appendChild(li);
+                });
+            }
+        }
+
+        // Helper to construct LI element
+        function createTaskElement(task, isPinned) {
+            const li = document.createElement('li');
+            li.className = 'task-item';
+            li.setAttribute('data-status', task.status);
+
+            const isTbc = task.status === 'To Be Continued';
+            const isDone = task.status === 'Done';
+
+            li.innerHTML = `
+                <div class="task-info">
+                    <div class="task-title">${escapeHTML(task.name)}</div>
+                    <div class="task-subject">${escapeHTML(task.subject)}</div>
+                </div>
+                <div class="task-controls">
+                    ${isTbc ? `
+                        <button class="btn-resume" onclick="resumeTask(${task.id})">▶ Resume</button>
+                    ` : ''}
+
+                    <select class="status-select" onchange="updateTaskStatus(${task.id}, this.value)" ${isDone ? 'disabled' : ''}>
+                        <option value="Ongoing" ${task.status === 'Ongoing' ? 'selected' : ''}>Ongoing</option>
+                        <option value="To Be Continued" ${task.status === 'To Be Continued' ? 'selected' : ''}>TBC</option>
+                        <option value="On Hold" ${task.status === 'On Hold' ? 'selected' : ''}>On Hold</option>
+                        <option value="Done" ${task.status === 'Done' ? 'selected' : ''}>Done</option>
+                    </select>
+
+                    <button class="btn-delete" onclick="deleteTask(${task.id})">✕</button>
+                </div>
+            `;
+
+            return li;
+        }
+
+        /* ==========================================
+           3. ACTIONS & HANDLERS
+           ========================================== */
+        function addTask(e) {
+            e.preventDefault();
+
+            const newTask = {
+                id: Date.now(),
+                subject: subjectInput.value.trim(),
+                name: nameInput.value.trim(),
+                status: statusInput.value
+            };
+
+            if (!newTask.name || !newTask.subject) return;
+
+            tasks.push(newTask);
+
+            // Clear inputs
+            subjectInput.value = '';
+            nameInput.value = '';
+            statusInput.value = 'Ongoing';
+
+            renderTasks();
+        }
+
+        window.resumeTask = function(id) {
+            updateTaskStatus(id, 'Ongoing');
+        };
+
+        window.updateTaskStatus = function(id, newStatus) {
+            const idx = tasks.findIndex(t => t.id === id);
+            if (idx !== -1) {
+                tasks[idx].status = newStatus;
+                renderTasks();
+            }
+        };
+
+        window.deleteTask = function(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            renderTasks();
+        };
+
+        window.setFilter = function(filter, btnEl) {
+            activeFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnEl.classList.add('active');
+            renderTasks();
+        };
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, char => ({ 
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' 
+            }[char] || char));
+        }
+
+        /* ==========================================
+           4. INIT & LISTENERS
+           ========================================== */
+        form.addEventListener('submit', addTask);
+        renderTasks();
+    </script>
+</body>
+</html>
