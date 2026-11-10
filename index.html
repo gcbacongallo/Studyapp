@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyStack: Flow & Focus</title>
     <style>
-        /* ==========================================
-           1. CSS STYLING (Neo-Brutalist Aesthetic)
-           ========================================== */
+    
         :root {
             --bg-main: #f4f1ea;        /* Beige */
             --card-bg: #FFFFFF;
@@ -429,9 +427,7 @@
     </div>
 
     <script>
-        /* ==========================================
-           1. STATE & DOM ELEMENTS
-           ========================================== */
+       
         let tasks = JSON.parse(localStorage.getItem('studystack_tasks')) || [];
         let activeFilter = 'All';
 
@@ -452,9 +448,7 @@
         const progressPercent = document.getElementById('progress-percent');
         const progressFill = document.getElementById('progress-fill');
 
-        /* ==========================================
-           2. RENDER FUNCTION
-           ========================================== */
+      
         function renderTasks() {
             // Save state to local storage
             localStorage.setItem('studystack_tasks', JSON.stringify(tasks));
@@ -550,9 +544,7 @@
             return li;
         }
 
-        /* ==========================================
-           3. ACTIONS & HANDLERS
-           ========================================== */
+      
         function addTask(e) {
             e.preventDefault();
 
@@ -605,9 +597,7 @@
             }[char] || char));
         }
 
-        /* ==========================================
-           4. INIT & LISTENERS
-           ========================================== */
+      
         form.addEventListener('submit', addTask);
         renderTasks();
     </script>
